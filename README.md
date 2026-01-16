@@ -1,75 +1,127 @@
-# AI-Powered Customer Support System
+# AI Support System
 
-A fullstack multi-agent customer support system built with modern technologies. Features a router agent that analyzes incoming queries and delegates to specialized sub-agents (Support, Order, Billing), each with access to relevant tools.
+A fullstack AI-powered customer support system with a multi-agent architecture. Features a router agent that analyzes incoming queries and delegates to specialized sub-agents, each with access to relevant tools.
 
-![Architecture](docs/architecture.png)
+## 🏗️ Architecture Overview
 
-## 🏗️ Architecture
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                         Frontend (React)                        │
+│                    Vite + TypeScript + Tailwind                 │
+└─────────────────────────────┬───────────────────────────────────┘
+                              │ Hono RPC (Type-safe)
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                      Backend (Hono.js)                          │
+│                                                                 │
+│  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐        │
+│  │ Controllers │───▶│  Services   │───▶│   Agents    │        │
+│  └─────────────┘    └─────────────┘    └──────┬──────┘        │
+│                                               │                 │
+│                                               ▼                 │
+│                                    ┌─────────────────┐         │
+│                                    │  Router Agent   │         │
+│                                    └────────┬────────┘         │
+│                           ┌─────────────────┼─────────────────┐│
+│                           ▼                 ▼                 ▼││
+│                    ┌───────────┐     ┌───────────┐     ┌─────────┐│
+│                    │  Support  │     │   Order   │     │ Billing ││
+│                    │   Agent   │     │   Agent   │     │  Agent  ││
+│                    └─────┬─────┘     └─────┬─────┘     └────┬────┘│
+│                          │                 │                 │    │
+│                    ┌─────┴─────┐     ┌─────┴─────┐     ┌────┴────┐│
+│                    │   Tools   │     │   Tools   │     │  Tools  ││
+│                    └───────────┘     └───────────┘     └─────────┘│
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                      PostgreSQL + Prisma                        │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+## 🚀 Features
 
 ### Multi-Agent System
+- **Router Agent**: Analyzes queries and delegates to specialized sub-agents
+- **Support Agent**: Handles FAQs, troubleshooting, account questions
+- **Order Agent**: Manages order status, tracking, modifications, cancellations
+- **Billing Agent**: Handles payments, refunds, invoices, subscriptions
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                      Router Agent                            │
-│  • Analyzes incoming customer queries                        │
-│  • Classifies intent and delegates to appropriate sub-agent  │
-│  • Handles fallback for unclassified queries                 │
-└─────────────────────────────────────────────────────────────┘
-                              │
-          ┌───────────────────┼───────────────────┐
-          ▼                   ▼                   ▼
-┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐
-│  Support Agent  │ │   Order Agent   │ │  Billing Agent  │
-│                 │ │                 │ │                 │
-│ Tools:          │ │ Tools:          │ │ Tools:          │
-│ • searchFAQs    │ │ • getOrderBy... │ │ • getInvoice... │
-│ • getConv...    │ │ • getUserOrders │ │ • getUserPay... │
-│ • getUserInfo   │ │ • checkDeliv... │ │ • checkRefund.. │
-│                 │ │ • cancelOrder   │ │ • requestRefund │
-│                 │ │ • modifyOrder   │ │ • getSubscr...  │
-│                 │ │                 │ │ • cancelSub...  │
-└─────────────────┘ └─────────────────┘ └─────────────────┘
-```
-
-### Tech Stack
-
-| Layer | Technology |
-|-------|------------|
-| Frontend | React + Vite + Tailwind CSS |
-| Backend | Hono.js (Node.js) |
-| Database | PostgreSQL |
-| ORM | Prisma |
-| AI | Vercel AI SDK + OpenAI |
-| Monorepo | Turborepo |
-| Type Safety | Hono RPC + Zod |
+### Technical Features
+- ✅ Streaming responses (Server-Sent Events)
+- ✅ Real-time typing indicators
+- ✅ Tool usage visualization
+- ✅ Conversation persistence
+- ✅ Rate limiting
+- ✅ Error handling middleware
+- ✅ Type-safe API (Hono RPC)
+- ✅ Monorepo with Turborepo
 
 ## 📁 Project Structure
 
 ```
 ai-support-system/
 ├── apps/
-│   ├── api/                    # Backend API
+│   ├── api/                    # Backend (Hono.js)
 │   │   ├── src/
-│   │   │   ├── agents/         # AI agents (Router, Support, Order, Billing)
+│   │   │   ├── agents/         # AI Agents
+│   │   │   │   ├── base.agent.ts
+│   │   │   │   ├── router.agent.ts
+│   │   │   │   ├── support.agent.ts
+│   │   │   │   ├── order.agent.ts
+│   │   │   │   └── billing.agent.ts
 │   │   │   ├── controllers/    # Request handlers
 │   │   │   ├── services/       # Business logic
 │   │   │   ├── tools/          # Agent tools
-│   │   │   ├── middleware/     # Error handling, rate limiting
-│   │   │   ├── routes/         # API routes with Hono RPC
+│   │   │   ├── middleware/     # Error & rate limiting
+│   │   │   ├── routes/         # API routes
 │   │   │   └── db/             # Database client & seed
 │   │   └── prisma/             # Database schema
-│   └── web/                    # Frontend
+│   │
+│   └── web/                    # Frontend (React + Vite)
 │       └── src/
-│           ├── components/     # React components
+│           ├── components/     # UI components
 │           ├── hooks/          # Custom hooks
 │           └── lib/            # API client
+│
 ├── packages/
 │   └── shared/                 # Shared types & schemas
+│
 ├── turbo.json                  # Turborepo config
 └── package.json                # Root package.json
 ```
 
-## 🚀 Getting Started
+## 🛠️ Tech Stack
+
+| Layer | Technology |
+|-------|------------|
+| Frontend | React 18, Vite, TypeScript, Tailwind CSS |
+| Backend | Hono.js, TypeScript |
+| Database | PostgreSQL, Prisma ORM |
+| AI | Vercel AI SDK, OpenAI GPT-4o-mini |
+| Monorepo | Turborepo, npm workspaces |
+| Type Safety | Zod, Hono RPC |
+
+## 📡 API Routes
+
+```
+/api
+├── /chat
+│   ├── POST /messages              # Send message (streaming)
+│   ├── POST /messages/sync         # Send message (non-streaming)
+│   ├── GET  /conversations/:id     # Get conversation with messages
+│   ├── GET  /conversations         # List user conversations
+│   └── DELETE /conversations/:id   # Delete conversation
+│
+├── /agents
+│   ├── GET /                       # List available agents
+│   └── GET /:type/capabilities     # Get agent capabilities
+│
+└── /health                         # Health check
+```
+
+## 🚦 Getting Started
 
 ### Prerequisites
 
@@ -81,7 +133,7 @@ ai-support-system/
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/ai-support-system.git
+   git clone https://github.com/your-username/ai-support-system.git
    cd ai-support-system
    ```
 
@@ -92,15 +144,12 @@ ai-support-system/
 
 3. **Set up environment variables**
    ```bash
+   # Copy example env file
    cp apps/api/.env.example apps/api/.env
-   ```
    
-   Edit `apps/api/.env`:
-   ```env
+   # Edit with your values
    DATABASE_URL="postgresql://postgres:postgres@localhost:5432/ai_support"
    OPENAI_API_KEY="sk-your-api-key-here"
-   PORT=3001
-   CORS_ORIGIN="http://localhost:5173"
    ```
 
 4. **Set up the database**
@@ -121,104 +170,92 @@ ai-support-system/
    ```
 
    This starts:
-   - API server at `http://localhost:3001`
-   - Frontend at `http://localhost:5173`
+   - API server at http://localhost:3001
+   - Frontend at http://localhost:5173
 
-## 📡 API Endpoints
+## 🎮 Usage
 
-### Chat
+### Demo User
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/chat/messages` | Send message (streaming SSE) |
-| POST | `/api/chat/messages/sync` | Send message (non-streaming) |
-| GET | `/api/chat/conversations` | List user conversations |
-| GET | `/api/chat/conversations/:id` | Get conversation with messages |
-| DELETE | `/api/chat/conversations/:id` | Delete conversation |
+The seed data creates a demo user (`user_demo`) with:
+- 4 sample orders (various statuses)
+- 6 payments/invoices
+- 1 active subscription
+- Sample conversation history
 
-### Agents
+### Example Queries
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/agents` | List available agents |
-| GET | `/api/agents/:type/capabilities` | Get agent capabilities |
+Try these queries to see different agents in action:
 
-### Health
+**Order Agent:**
+- "What are my recent orders?"
+- "Track order ORD-2024-002"
+- "Can I cancel my pending order?"
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/health` | Health check |
+**Billing Agent:**
+- "Show me my invoices"
+- "I need a refund for invoice INV-2024-001"
+- "What's my subscription status?"
 
-## 🤖 Agents & Tools
+**Support Agent:**
+- "How do I reset my password?"
+- "What payment methods do you accept?"
+- "How do I contact support?"
 
-### Support Agent
-Handles general support inquiries, FAQs, and troubleshooting.
+## 🔧 Agent Tools
 
-**Tools:**
-- `searchFAQs` - Search FAQ database
-- `getConversationHistory` - Get previous conversations for context
-- `getUserInfo` - Get user information
+### Support Agent Tools
+| Tool | Description |
+|------|-------------|
+| `searchFAQs` | Search FAQ database for answers |
+| `getConversationHistory` | Get past conversation context |
+| `getUserInfo` | Get user profile information |
 
-### Order Agent
-Handles order status, tracking, modifications, and cancellations.
+### Order Agent Tools
+| Tool | Description |
+|------|-------------|
+| `getOrderByNumber` | Get specific order details |
+| `getUserOrders` | List all user orders |
+| `checkDeliveryStatus` | Get delivery/tracking info |
+| `cancelOrder` | Cancel an order |
+| `modifyOrder` | Check modification options |
 
-**Tools:**
-- `getOrderByNumber` - Get order by order number
-- `getUserOrders` - Get all orders for a user
-- `checkDeliveryStatus` - Get delivery/tracking info
-- `cancelOrder` - Cancel an order
-- `modifyOrder` - Check modification options
+### Billing Agent Tools
+| Tool | Description |
+|------|-------------|
+| `getInvoiceDetails` | Get invoice information |
+| `getUserPayments` | List payment history |
+| `checkRefundStatus` | Check refund status |
+| `requestRefund` | Initiate refund request |
+| `getSubscription` | Get subscription details |
+| `cancelSubscription` | Cancel subscription |
 
-### Billing Agent
-Handles payment issues, refunds, invoices, and subscriptions.
+## 🏆 Bonus Features Implemented
 
-**Tools:**
-- `getInvoiceDetails` - Get invoice by number
-- `getUserPayments` - Get payment history
-- `checkRefundStatus` - Check refund status
-- `requestRefund` - Initiate refund
-- `getSubscription` - Get subscription details
-- `cancelSubscription` - Cancel subscription
+- ✅ **Hono RPC + Monorepo Setup** - Full type safety between frontend and backend
+- ✅ **Rate Limiting** - Configurable rate limits for API endpoints
+- ✅ **Thinking/Reasoning Display** - Shows agent routing and tool usage
+- ✅ **Streaming Responses** - Real-time response streaming with SSE
 
-## 🔄 Streaming Response Flow
+## 📝 Design Decisions
 
-```
-Client                    Server                    AI
-  │                         │                        │
-  ├──POST /messages────────►│                        │
-  │                         ├──Route to agent───────►│
-  │◄──SSE: thinking─────────┤                        │
-  │◄──SSE: routing──────────┤◄──Agent selected──────┤
-  │◄──SSE: tool_call────────┤◄──Tool execution──────┤
-  │◄──SSE: tool_result──────┤                        │
-  │◄──SSE: text_delta───────┤◄──Stream response─────┤
-  │◄──SSE: text_delta───────┤◄─────────────────────┤
-  │◄──SSE: done─────────────┤◄──Complete───────────┤
-  │                         │                        │
-```
+### Why Controller-Service Pattern?
+- Clear separation of concerns
+- Controllers handle HTTP concerns
+- Services contain business logic
+- Easier testing and maintenance
 
-## ✨ Features
+### Why Multi-Agent Architecture?
+- Specialized agents provide better responses
+- Tools are scoped to relevant domains
+- Router enables intelligent delegation
+- Fallback handling for edge cases
 
-- [x] **Multi-Agent Architecture** - Router delegates to specialized agents
-- [x] **Controller-Service Pattern** - Clean separation of concerns
-- [x] **Streaming Responses** - Real-time SSE streaming
-- [x] **Tool Execution** - Agents use tools to query database
-- [x] **Conversation Context** - Maintains history across messages
-- [x] **Hono RPC** - End-to-end type safety
-- [x] **Monorepo** - Turborepo for efficient builds
-- [x] **Rate Limiting** - Prevent abuse
-- [x] **Error Handling** - Global error middleware
-- [x] **Typing Indicators** - Real-time "AI is typing" feedback
-
-## 🎯 Bonus Features
-
-- [x] Hono RPC + Monorepo Setup (+30 points)
-- [x] Rate limiting implementation
-- [x] Show reasoning/thinking indicators
-- [ ] Unit/integration tests
-- [ ] Context compaction
-- [ ] Deployed live demo
-- [ ] useworkflow.dev integration
+### Why Streaming?
+- Better user experience
+- Real-time feedback
+- Reduced perceived latency
+- Progressive rendering
 
 ## 🧪 Testing
 
@@ -226,8 +263,8 @@ Client                    Server                    AI
 # Run all tests
 npm run test
 
-# Run API tests
-cd apps/api && npm run test
+# Run specific package tests
+npm run test --filter=@ai-support/api
 ```
 
 ## 📦 Building for Production
@@ -237,29 +274,21 @@ cd apps/api && npm run test
 npm run build
 
 # Start production server
-cd apps/api && npm run start
+cd apps/api && npm start
 ```
 
-## 🔧 Configuration
+## 🤝 Contributing
 
-### Environment Variables
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `DATABASE_URL` | PostgreSQL connection string | - |
-| `OPENAI_API_KEY` | OpenAI API key | - |
-| `OPENAI_BASE_URL` | Custom OpenAI-compatible API base URL | - |
-| `PORT` | API server port | 3001 |
-| `CORS_ORIGIN` | Allowed CORS origin | * |
+## 📄 License
 
-## 📝 License
-
-MIT
-
-## 👤 Author
-
-Your Name
+This project is licensed under the MIT License.
 
 ---
 
-Built with ❤️ using Hono, React, Prisma, and Vercel AI SDK
+Built with ❤️ for the Fullstack Engineering Assessment

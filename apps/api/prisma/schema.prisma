@@ -1,0 +1,156 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============ User & Conversation Models ============
+
+model User {
+  id            String         @id @default(cuid())
+  email         String         @unique
+  name          String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  conversations Conversation[]
+  orders        Order[]
+  payments      Payment[]
+  subscriptions Subscription[]
+}
+
+model Conversation {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String?
+  summary   String?   @db.Text
+  metadata  Json?
+  messages  Message[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([userId])
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  role           MessageRole
+  content        String       @db.Text
+  agentType      AgentType?
+  toolCalls      Json?
+  toolResults    Json?
+  createdAt      DateTime     @default(now())
+
+  @@index([conversationId])
+}
+
+enum MessageRole {
+  user
+  assistant
+  system
+  tool
+}
+
+enum AgentType {
+  router
+  support
+  order
+  billing
+}
+
+// ============ Order Models ============
+
+model Order {
+  id                String      @id @default(cuid())
+  userId            String
+  user              User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orderNumber       String      @unique
+  status            OrderStatus
+  items             Json
+  total             Float
+  shippingAddress   String      @db.Text
+  trackingNumber    String?
+  estimatedDelivery DateTime?
+  payments          Payment[]
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  @@index([userId])
+  @@index([orderNumber])
+}
+
+enum OrderStatus {
+  pending
+  processing
+  shipped
+  delivered
+  cancelled
+}
+
+// ============ Payment & Billing Models ============
+
+model Payment {
+  id            String        @id @default(cuid())
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orderId       String?
+  order         Order?        @relation(fields: [orderId], references: [id])
+  invoiceNumber String        @unique
+  amount        Float
+  status        PaymentStatus
+  method        String
+  refundAmount  Float?
+  refundReason  String?
+  createdAt     DateTime      @default(now())
+
+  @@index([userId])
+  @@index([invoiceNumber])
+}
+
+enum PaymentStatus {
+  pending
+  completed
+  failed
+  refunded
+  partially_refunded
+}
+
+model Subscription {
+  id                 String             @id @default(cuid())
+  userId             String
+  user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan               String
+  status             SubscriptionStatus
+  currentPeriodStart DateTime
+  currentPeriodEnd   DateTime
+  cancelAtPeriodEnd  Boolean            @default(false)
+  createdAt          DateTime           @default(now())
+
+  @@index([userId])
+}
+
+enum SubscriptionStatus {
+  active
+  cancelled
+  paused
+  expired
+}
+
+// ============ FAQ & Support Models ============
+
+model FAQ {
+  id        String   @id @default(cuid())
+  question  String
+  answer    String   @db.Text
+  category  String
+  keywords  String[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([category])
+}
